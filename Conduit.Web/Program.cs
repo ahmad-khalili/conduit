@@ -1,5 +1,9 @@
+using System.Reflection;
 using Conduit.Infrastructure;
+using Conduit.Infrastructure.Repositories;
+using Conduit.SharedKernel.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,10 @@ builder.Services.AddDbContext<ConduitDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConduitDb"));
 });
+
+builder.Services.AddAutoMapper(Assembly.Load("Conduit.Core"));
+
+builder.Services.TryAddScoped<IArticleRepository, ArticleRepository>();
 
 var app = builder.Build();
 
