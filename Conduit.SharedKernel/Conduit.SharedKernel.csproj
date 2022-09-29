@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Conduit.Core\Conduit.Core.csproj" />
+    </ItemGroup>
+    
 </Project>
