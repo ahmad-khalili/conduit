@@ -15,13 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Conduit.Core\Conduit.Core.csproj" />
       <ProjectReference Include="..\Conduit.Infrastructure\Conduit.Infrastructure.csproj" />
-      <ProjectReference Include="..\Conduit.SharedKernel\Conduit.SharedKernel.csproj" />
     </ItemGroup>
 
 </Project>
