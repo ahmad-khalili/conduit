@@ -1,8 +1,10 @@
-﻿namespace Conduit.Core.Models;
+﻿using Conduit.Core.Extensions;
+
+namespace Conduit.Core.Models;
 
 public class ArticleDto
 {
-    public string Slug => Title.Replace("%20", "-");
+    public string Slug => Title.ToSlug();
     public string Title { get; set; }
     public string Description { get; set; }
     public string Body { get; set; }
