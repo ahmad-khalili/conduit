@@ -23,6 +23,13 @@ public class ArticleRepository : IArticleRepository
         return collectionToReturn;
     }
 
+    public async Task<Article?> GetArticleAsync(string articleSlug)
+    {
+        var articles = await _context.Articles.ToListAsync();
+
+        return articles.FirstOrDefault(a => a.Slug.Equals(articleSlug));
+    }
+    
     public async Task AddArticleAsync(Article article)
     {
         await _context.Articles.AddAsync(article);
