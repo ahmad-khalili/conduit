@@ -2,6 +2,7 @@ using System.Reflection;
 using Conduit.Infrastructure;
 using Conduit.Infrastructure.Repositories;
 using Conduit.SharedKernel.Interfaces;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -23,6 +24,8 @@ builder.Services.AddDbContext<ConduitDbContext>(options =>
 builder.Services.AddAutoMapper(Assembly.Load("Conduit.Core"));
 
 builder.Services.TryAddScoped<IArticleRepository, ArticleRepository>();
+
+builder.Services.AddValidatorsFromAssembly(Assembly.Load("Conduit.SharedKernel"));
 
 var app = builder.Build();
 
