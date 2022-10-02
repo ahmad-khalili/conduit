@@ -3,6 +3,7 @@ using Conduit.Core.Entities;
 using Conduit.Core.Models;
 using Conduit.SharedKernel.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Conduit.Web.Controllers;
@@ -68,5 +69,27 @@ public class ArticlesController : Controller
         var createdArticle = _mapper.Map<ArticleDto>(articleToCreate);
 
         return CreatedAtAction("CreateArticle", createdArticle);
+    }
+
+    [HttpPatch("{articleSlug}")]
+    public async Task<ActionResult<ArticleDto>> UpdateArticle(string articleSlug,
+        JsonPatchDocument<ArticleForCreationDto> patchDocument)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+
+        var articleToPatch = _mapper.Map<ArticleForCreationDto>(article);
+        
+        patchDocument.ApplyTo(articleToPatch);
+
+        await _validator.ValidateAndThrowAsync(_mapper.Map<Article>(articleToPatch));
+        
+        _mapper.Map(articleToPatch, article);
+
+        await _articleRepository.SavesChangesAsync();
+
+        return Ok(_mapper.Map<ArticleDto>(article));
     }
 }
