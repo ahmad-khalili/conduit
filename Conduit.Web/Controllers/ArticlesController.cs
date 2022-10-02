@@ -43,7 +43,7 @@ public class ArticlesController : Controller
         });
     }
 
-    [HttpGet("{articleSlug}", Name = "GetArticle")]
+    [HttpGet("{articleSlug}")]
     public async Task<ActionResult<ArticleDto>> GetArticle(string articleSlug)
     {
         var article = await _articleRepository.GetArticleAsync(articleSlug);
@@ -65,8 +65,8 @@ public class ArticlesController : Controller
 
         await _articleRepository.SavesChangesAsync();
 
-        var createdArticle = _mapper.Map<Article>(articleToCreate);
+        var createdArticle = _mapper.Map<ArticleDto>(articleToCreate);
 
-        return Ok(createdArticle);
+        return CreatedAtAction("CreateArticle", createdArticle);
     }
 }
