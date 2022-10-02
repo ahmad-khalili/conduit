@@ -11,6 +11,8 @@ public interface IArticleRepository
     Task AddArticleAsync(Article article);
 
     Task<int> GetCountAsync();
+
+    void RemoveArticle(Article article);
     
     Task SavesChangesAsync();
 }

@@ -92,4 +92,19 @@ public class ArticlesController : Controller
 
         return Ok(_mapper.Map<ArticleDto>(article));
     }
+
+    [HttpDelete("{articleSlug}")]
+    public async Task<ActionResult> DeleteArticle(string articleSlug)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+        
+        _articleRepository.RemoveArticle(article);
+
+        await _articleRepository.SavesChangesAsync();
+
+        return NoContent();
+    }
 }
