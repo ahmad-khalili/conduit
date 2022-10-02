@@ -43,6 +43,17 @@ public class ArticlesController : Controller
         });
     }
 
+    [HttpGet("{articleSlug}", Name = "GetArticle")]
+    public async Task<ActionResult<ArticleDto>> GetArticle(string articleSlug)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+
+        return Ok(_mapper.Map<ArticleDto>(article));
+    }
+
     [HttpPost]
     public async Task<ActionResult<ArticleDto>> CreateArticle(ArticleForCreationDto article)
     {
