@@ -40,6 +40,11 @@ public class ArticleRepository : IArticleRepository
         return await _context.Articles.CountAsync();
     }
 
+    public void RemoveArticle(Article article)
+    {
+        _context.Articles.Remove(article);
+    }
+
     public async Task SavesChangesAsync()
     {
         await _context.SaveChangesAsync();
