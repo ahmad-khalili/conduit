@@ -10,5 +10,6 @@ public class ArticleProfile : Profile
     {
         CreateMap<Article, ArticleDto>();
         CreateMap<ArticleForCreationDto, Article>();
+        CreateMap<Article, ArticleForCreationDto>();
     }
 }
