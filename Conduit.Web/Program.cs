@@ -1,11 +1,31 @@
+using System.Reflection;
+using Conduit.Infrastructure;
+using Conduit.Infrastructure.Repositories;
+using Conduit.SharedKernel.Interfaces;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<ConduitDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConduitDb"));
+});
+
+builder.Services.AddAutoMapper(Assembly.Load("Conduit.Core"));
+
+builder.Services.TryAddScoped<IArticleRepository, ArticleRepository>();
+
+builder.Services.AddValidatorsFromAssembly(Assembly.Load("Conduit.SharedKernel"));
 
 var app = builder.Build();
 

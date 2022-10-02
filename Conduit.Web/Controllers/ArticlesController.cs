@@ -1,0 +1,110 @@
+﻿using AutoMapper;
+using Conduit.Core.Entities;
+using Conduit.Core.Models;
+using Conduit.SharedKernel.Interfaces;
+using FluentValidation;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Conduit.Web.Controllers;
+
+[Route("api/articles")]
+[ApiController]
+public class ArticlesController : Controller
+{
+    private const int DefaultOffset = 0;
+    private const int DefaultLimit = 20;
+    
+    private readonly IArticleRepository _articleRepository;
+    private readonly IMapper _mapper;
+    private readonly IValidator<Article> _validator;
+
+    public ArticlesController(IArticleRepository articleRepository, IMapper mapper,
+        IValidator<Article> validator)
+    {
+        _articleRepository = articleRepository ?? throw new ArgumentNullException(nameof(articleRepository));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> GetArticles(int offset = DefaultOffset, 
+        int limit = DefaultLimit)
+    {
+        var articlesList = await _articleRepository.GetArticlesAsync(offset, limit);
+
+        var articles = _mapper.Map<IEnumerable<ArticleDto>>(articlesList);
+
+        var articlesCount = await _articleRepository.GetCountAsync();
+
+        return Ok(new
+        {
+            articles,
+            articlesCount
+        });
+    }
+
+    [HttpGet("{articleSlug}")]
+    public async Task<ActionResult<ArticleDto>> GetArticle(string articleSlug)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+
+        return Ok(_mapper.Map<ArticleDto>(article));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ArticleDto>> CreateArticle(ArticleForCreationDto article)
+    {
+        var articleToCreate = _mapper.Map<Article>(article);
+
+        await _validator.ValidateAndThrowAsync(articleToCreate);
+
+        await _articleRepository.AddArticleAsync(articleToCreate);
+
+        await _articleRepository.SavesChangesAsync();
+
+        var createdArticle = _mapper.Map<ArticleDto>(articleToCreate);
+
+        return CreatedAtAction("CreateArticle", createdArticle);
+    }
+
+    [HttpPatch("{articleSlug}")]
+    public async Task<ActionResult<ArticleDto>> UpdateArticle(string articleSlug,
+        JsonPatchDocument<ArticleForCreationDto> patchDocument)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+
+        var articleToPatch = _mapper.Map<ArticleForCreationDto>(article);
+        
+        patchDocument.ApplyTo(articleToPatch);
+
+        await _validator.ValidateAndThrowAsync(_mapper.Map<Article>(articleToPatch));
+        
+        _mapper.Map(articleToPatch, article);
+
+        await _articleRepository.SavesChangesAsync();
+
+        return Ok(_mapper.Map<ArticleDto>(article));
+    }
+
+    [HttpDelete("{articleSlug}")]
+    public async Task<ActionResult> DeleteArticle(string articleSlug)
+    {
+        var article = await _articleRepository.GetArticleAsync(articleSlug);
+
+        if (article == default)
+            return NotFound();
+        
+        _articleRepository.RemoveArticle(article);
+
+        await _articleRepository.SavesChangesAsync();
+
+        return NoContent();
+    }
+}
