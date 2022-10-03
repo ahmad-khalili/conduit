@@ -15,6 +15,8 @@ public class ConduitDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Article>().HasIndex(a => a.Title).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique();
         base.OnModelCreating(modelBuilder);
     }
 }
