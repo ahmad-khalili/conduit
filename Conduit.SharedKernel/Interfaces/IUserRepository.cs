@@ -5,5 +5,6 @@ namespace Conduit.SharedKernel.Interfaces;
 public interface IUserRepository
 {
     Task AddUserAsync(User user);
+    Task<User?> GetUserAsync(string userEmail);
     Task SaveChangesAsync();
 }
