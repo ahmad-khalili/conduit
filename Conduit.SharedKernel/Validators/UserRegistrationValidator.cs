@@ -1,12 +1,11 @@
-﻿using Conduit.Core.Entities;
-using Conduit.Core.Models;
+﻿using Conduit.Core.Models;
 using FluentValidation;
 
 namespace Conduit.SharedKernel.Validators;
 
-public class RegisterUserValidator : AbstractValidator<UserForCreationDto>
+public class UserRegistrationValidator : AbstractValidator<UserForCreationDto>
 {
-    public RegisterUserValidator()
+    public UserRegistrationValidator()
     {
         RuleFor(user => user.UserName).NotEmpty();
         RuleFor(user => user.Email).NotEmpty();
