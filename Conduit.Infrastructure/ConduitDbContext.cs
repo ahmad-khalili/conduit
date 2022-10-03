@@ -10,9 +10,11 @@ public class ConduitDbContext : DbContext
     }
 
     public DbSet<Article> Articles { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Article>().HasIndex(a => a.Title).IsUnique();
+        base.OnModelCreating(modelBuilder);
     }
 }
