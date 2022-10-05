@@ -6,13 +6,14 @@ using Conduit.Core.Entities;
 using Conduit.Core.Models;
 using Conduit.SharedKernel.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Conduit.Web.Controllers;
 
-[Route("api/users")]
+[Route("api/")]
 [ApiController]
 public class UsersController : Controller
 {
@@ -33,7 +34,7 @@ public class UsersController : Controller
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 
-    [HttpPost]
+    [HttpPost("users")]
     public async Task<ActionResult<UserDto>> RegisterUser(UserForCreationDto userDto)
     {
         await _registrationValidator.ValidateAndThrowAsync(userDto);
@@ -47,7 +48,7 @@ public class UsersController : Controller
         return CreatedAtAction("RegisterUser", _mapper.Map<UserDto>(user));
     }
 
-    [HttpPost("login")]
+    [HttpPost("users/login")]
     public async Task<ActionResult<UserDto>> LoginUser(UserForLoginDto userDto)
     {
         await _loginValidator.ValidateAndThrowAsync(userDto);
@@ -78,10 +79,24 @@ public class UsersController : Controller
 
         var actualToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-        userEntity.Token = actualToken;
+        userEntity.Token = $"Bearer {actualToken}";
 
         await _userRepository.SaveChangesAsync();
 
         return Ok(_mapper.Map<UserDto>(userEntity));
+    }
+    
+    [Authorize]
+    [HttpGet("user")]
+    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    {
+        var token = HttpContext.Request.Headers.Authorization.ToString();
+        
+        var user = await _userRepository.GetCurrentUserAsync(token);
+
+        if (user == default)
+            return NotFound();
+
+        return Ok(_mapper.Map<UserDto>(user));
     }
 }

@@ -23,6 +23,11 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(userEmail));
     }
 
+    public async Task<User?> GetCurrentUserAsync(string token)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Token.Equals(token));
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
