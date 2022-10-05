@@ -19,17 +19,17 @@ public class UsersController : Controller
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly IValidator<UserForCreationDto> _registrationValidator;
+    private readonly IValidator<User> _validator;
     private readonly IValidator<UserForLoginDto> _loginValidator;
     private readonly IConfiguration _config;
 
     public UsersController(IUserRepository userRepository, IMapper mapper,
-        IValidator<UserForCreationDto> registrationValidator, IValidator<UserForLoginDto> loginValidator,
+        IValidator<User> validator, IValidator<UserForLoginDto> loginValidator,
         IConfiguration config)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _registrationValidator = registrationValidator ?? throw new ArgumentNullException(nameof(registrationValidator));
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _loginValidator = loginValidator ?? throw new ArgumentNullException(nameof(loginValidator));
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
@@ -37,9 +37,9 @@ public class UsersController : Controller
     [HttpPost("users")]
     public async Task<ActionResult<UserDto>> RegisterUser(UserForCreationDto userDto)
     {
-        await _registrationValidator.ValidateAndThrowAsync(userDto);
-
         var user = _mapper.Map<User>(userDto);
+        
+        await _validator.ValidateAndThrowAsync(user);
 
         await _userRepository.AddUserAsync(user);
 
@@ -98,5 +98,28 @@ public class UsersController : Controller
             return NotFound();
 
         return Ok(_mapper.Map<UserDto>(user));
+    }
+
+    [Authorize]
+    [HttpPut("user")]
+    public async Task<ActionResult<UserDto>> UpdateUser(UserForUpdateDto userForUpdateDto)
+    {
+        var userEntity = await _userRepository.GetUserAsync(userForUpdateDto.Email);
+
+        if (userEntity == default)
+            return NotFound();
+
+        var token = HttpContext.Request.Headers.Authorization.ToString();
+
+        if (userEntity.Token != token)
+            return Unauthorized();
+
+        _mapper.Map(userForUpdateDto, userEntity);
+
+        await _validator.ValidateAndThrowAsync(userEntity);
+
+        await _userRepository.SaveChangesAsync();
+
+        return Ok(_mapper.Map<UserDto>(userEntity));
     }
 }
